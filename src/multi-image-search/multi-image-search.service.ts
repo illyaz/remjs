@@ -1,19 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { Config } from '../config';
-import { SauceNaoProvider } from './providers';
+import { SauceNaoProvider, MoebooruProvider } from './providers';
 
 @Injectable()
 export class MultiImageSearchService {
   constructor(
     private readonly config: Config,
     private sauceNao: SauceNaoProvider,
+    private moebooru: MoebooruProvider,
   ) {}
 
   async search(
     thumbUrl: string,
   ): Promise<{ similarity: number; url: string; extra: any }[]> {
     const results = await Promise.all(
-      [this.sauceNao].map((x) => x.search(thumbUrl)),
+      [this.sauceNao, this.moebooru].map((x) => x.search(thumbUrl)),
     ).then((x) => x.flat());
 
     const newResults = [];
