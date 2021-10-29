@@ -1,6 +1,9 @@
-import { IsString, IsUrl } from 'class-validator';
+import { IsNumber, IsString, IsUrl } from 'class-validator';
 
 export class Config {
+  @IsNumber()
+  public readonly port: number;
+
   @IsString()
   public readonly token: string;
 
