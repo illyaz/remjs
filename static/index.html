@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <title>Rem</title>
+  <style>
+      .fullscreen {
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          right: 0;
+      }
+
+      .rem {
+          background-image: url(rem-min.png);
+          background-size: contain;
+          background-position: right bottom;
+          background-repeat: no-repeat;
+      }
+
+      .stripe {
+          height: 100%;
+          background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.2) .005rem, transparent .01rem);
+      }
+
+      body {
+          margin: 0;
+          background: #8abdf6;
+      }
+  </style>
+</head>
+<body>
+<div class='fullscreen rem'>
+  <div class='stripe'></div>
+</div>
+</body>
+</html>
