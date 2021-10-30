@@ -4,6 +4,4 @@ child_process.execSync('npm run build', {
   stdio: 'inherit',
 });
 
-child_process.execSync('npm run start:prod', {
-  stdio: 'inherit',
-});
+import('./dist/main.js');
