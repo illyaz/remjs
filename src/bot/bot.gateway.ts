@@ -30,7 +30,7 @@ export class BotGateway {
 
   @OnCommand({ name: 'ping', isIgnoreBotMessage: true })
   async pingCommand(ctx: Message): Promise<void> {
-    await ctx.reply(`🏓Latency is ${Date.now() - ctx.createdTimestamp}ms`);
+    await ctx.reply(`Latency is ${Date.now() - ctx.createdTimestamp}ms`);
   }
 
   @OnCommand({ name: 'uptime', isIgnoreBotMessage: true })
