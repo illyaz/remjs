@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DiscordClientProvider, On, Once, OnCommand } from 'discord-nestjs';
+import { DiscordClientProvider, On, Once } from '@discord-nestjs/core';
 import { Message } from 'discord.js';
 import * as humanizeDuration from 'humanize-duration';
 import * as os from 'os';
@@ -13,6 +13,11 @@ import { YoutubeNotifyService } from './youtube-notify.service';
 @Injectable()
 export class BotGateway {
   private readonly logger = new Logger(BotGateway.name);
+  private readonly commandMap = {} as Record<
+    string,
+    (ctx: Message) => Promise<void>
+  >;
+
   constructor(
     private readonly discord: DiscordClientProvider,
     private readonly config: Config,
@@ -20,27 +25,58 @@ export class BotGateway {
     @InjectRepository(Urls)
     private readonly urls: Repository<Urls>,
     private readonly ytNotifyService: YoutubeNotifyService,
-  ) {}
+  ) {
+    this.commandMap = Object.getOwnPropertyNames(BotGateway.prototype)
+      .filter((x) => x.endsWith('Command') && x !== 'processCommand')
+      .reduce(
+        (p, c) => ({
+          ...p,
+          [c.slice(0, -7)]: BotGateway.prototype[c].bind(this),
+        }),
+        {},
+      );
+  }
 
-  @Once({ event: 'ready' })
+  @Once('ready')
   async onReady(): Promise<void> {
     this.logger.log(`Logged in as ${this.discord.getClient().user.tag}!`);
     await this.ytNotifyService.start();
   }
 
-  @OnCommand({ name: 'ping', isIgnoreBotMessage: true })
+  @On('messageCreate')
+  onMessageCreate(ctx: Message) {
+    if (ctx.author.bot) return;
+
+    if (ctx.content.startsWith(this.config.prefix))
+      // noinspection JSIgnoredPromiseFromCall
+      this.processCommand(ctx);
+    else if (ctx.content === 'วาป' || ctx.content === 'ซอส')
+      // noinspection JSIgnoredPromiseFromCall
+      this.findSource(ctx);
+  }
+
+  async processCommand(ctx: Message) {
+    try {
+      const args = ctx.content.substr(this.config.prefix.length).split(' ');
+      const commandFunc = this.commandMap[args[0]];
+      if (commandFunc) await commandFunc(ctx);
+    } catch (e) {
+      this.logger.error(e);
+      // noinspection ES6MissingAwait
+      ctx.reply('Oops something went wrong, please try again later');
+    }
+  }
+
   async pingCommand(ctx: Message): Promise<void> {
     await ctx.reply(`Latency is ${Date.now() - ctx.createdTimestamp}ms`);
   }
 
-  @OnCommand({ name: 'uptime', isIgnoreBotMessage: true })
   async uptimeCommand(ctx: Message): Promise<void> {
     await ctx.reply(
       `\`System uptime: ${humanizeDuration(Math.round(os.uptime() * 1000))}\``,
     );
   }
 
-  @OnCommand({ name: 'uptimerem', isIgnoreBotMessage: true })
   async uptimeremCommand(ctx: Message): Promise<void> {
     await ctx.reply(
       `\`Rem uptime: ${humanizeDuration(
@@ -49,28 +85,22 @@ export class BotGateway {
     );
   }
 
-  @OnCommand({ name: 'me', isIgnoreBotMessage: true })
   async meCommand(ctx: Message): Promise<void> {
     await ctx.reply(ctx.author.id);
   }
 
-  @OnCommand({ name: 'hostname' })
   async hostnameCommand(ctx: Message): Promise<void> {
     if (ctx.author.id !== this.config.owner) return;
     await ctx.reply(os.hostname());
   }
 
-  @OnCommand({ name: 'say' })
   async sayCommand(ctx: Message): Promise<void> {
     // noinspection ES6MissingAwait
     ctx.delete();
     await ctx.channel.send(ctx.content.substr(4));
   }
 
-  @On({ event: 'message' })
-  async onMessage(ctx: Message): Promise<void> {
-    if (!(ctx.content === 'วาป' || ctx.content === 'ซอส')) return;
-
+  async findSource(ctx: Message): Promise<void> {
     const editableMsg = await ctx.channel.send('Searching ...');
     try {
       const msgs = await ctx.channel.messages.fetch({
@@ -116,21 +146,23 @@ export class BotGateway {
 
             await editableMsg.edit({
               content: null,
-              embed: {
-                description,
-                timestamp: Date.now(),
-                footer: {
-                  icon_url: ctx.author.avatarURL({ size: 32 }),
-                  text: ctx.author.username,
+              embeds: [
+                {
+                  description,
+                  timestamp: Date.now(),
+                  footer: {
+                    icon_url: ctx.author.avatarURL({ size: 32 }),
+                    text: ctx.author.username,
+                  },
+                  thumbnail: {
+                    url: thumbUrl,
+                  },
+                  author: {
+                    name: 'Search results',
+                    url: this.config.baseUrl,
+                  },
                 },
-                thumbnail: {
-                  url: thumbUrl,
-                },
-                author: {
-                  name: 'Search results',
-                  url: this.config.baseUrl,
-                },
-              },
+              ],
             });
           } else {
             await editableMsg.edit('No similarity image found');

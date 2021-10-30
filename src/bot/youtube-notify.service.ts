@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DiscordClientProvider } from 'discord-nestjs';
+import { DiscordClientProvider } from '@discord-nestjs/core';
 import { Config } from '../config';
 import {
   VTrackerNotifyClient,
@@ -133,8 +133,9 @@ export class YoutubeNotifyService {
             : await this.getChannel(meta.id);
 
         try {
-          if (to instanceof User) await to.send({ embed });
-          else if (to instanceof TextChannel) await to.send({ embed });
+          if (to instanceof User) await to.send({ embeds: [embed] });
+          else if (to instanceof TextChannel)
+            await to.send({ embeds: [embed] });
           this.logNotify(key, data, to);
         } catch (e) {
           this.logNotifyException(key, data, to, e);
@@ -293,13 +294,13 @@ export class YoutubeNotifyService {
 
   private getUser = async (id) =>
     this.discord.getClient().users.cache.get(id) ??
-    (await this.discord.getClient().users.fetch(id, true));
+    (await this.discord.getClient().users.fetch(id, { cache: true }));
 
   private getChannel = async (id) =>
     (this.discord.getClient().channels.cache.get(id) ??
       (await this.discord
         .getClient()
-        .channels.fetch(id, true))) as GuildChannel;
+        .channels.fetch(id, { cache: true }))) as GuildChannel;
 
   private getShort = (data: YoutubeVideoNotifyPayload) => {
     switch (data.type) {
