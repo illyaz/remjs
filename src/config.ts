@@ -1,4 +1,4 @@
-import { IsNumber, IsString, IsUrl } from 'class-validator';
+import { IsDefined, IsNumber, IsString, IsUrl } from 'class-validator';
 
 export class Config {
   @IsNumber()
@@ -27,4 +27,12 @@ export class Config {
 
   @IsString()
   public readonly sauceNaoApiKey: string;
+
+  @IsString()
+  public readonly vtrackerEndpoint: string;
+
+  @IsDefined()
+  public readonly notifications: {
+    [key: string]: { id: number; token: string; raw: boolean; send: string[] };
+  };
 }

@@ -37,7 +37,10 @@
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "sqlite3": "^5.0.2",
-    "typeorm": "^0.2.38"
+    "typeorm": "^0.2.38",
+    "websocket": "^1.0.34",
+    "wink-nlp-utils": "^2.0.7",
+    "ws": "^8.2.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",
@@ -47,6 +50,7 @@
     "@types/jest": "^27.0.1",
     "@types/node": "^16.0.0",
     "@types/supertest": "^2.0.11",
+    "@types/websocket": "^1.0.4",
     "@typescript-eslint/eslint-plugin": "^4.28.2",
     "@typescript-eslint/parser": "^4.28.2",
     "eslint": "^7.30.0",

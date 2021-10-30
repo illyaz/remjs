@@ -5,6 +5,7 @@ import { BotGateway } from './bot.gateway';
 import { MultiImageSearchModule } from '../multi-image-search/multi-image-search.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Urls } from '../entity';
+import { YoutubeNotifyService } from './youtube-notify.service';
 
 @Module({
   imports: [
@@ -18,6 +19,6 @@ import { Urls } from '../entity';
     MultiImageSearchModule,
     TypeOrmModule.forFeature([Urls]),
   ],
-  providers: [BotGateway],
+  providers: [BotGateway, YoutubeNotifyService],
 })
 export class BotModule {}

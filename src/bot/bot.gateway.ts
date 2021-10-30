@@ -8,6 +8,7 @@ import { MultiImageSearchService } from '../multi-image-search/multi-image-searc
 import { Repository } from 'typeorm';
 import { Urls } from '../entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { YoutubeNotifyService } from './youtube-notify.service';
 
 @Injectable()
 export class BotGateway {
@@ -18,11 +19,13 @@ export class BotGateway {
     private readonly imageSearchService: MultiImageSearchService,
     @InjectRepository(Urls)
     private readonly urls: Repository<Urls>,
+    private readonly ytNotifyService: YoutubeNotifyService,
   ) {}
 
   @Once({ event: 'ready' })
-  onReady(): void {
+  async onReady(): Promise<void> {
     this.logger.log(`Logged in as ${this.discord.getClient().user.tag}!`);
+    await this.ytNotifyService.start();
   }
 
   @OnCommand({ name: 'ping', isIgnoreBotMessage: true })
