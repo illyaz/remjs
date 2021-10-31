@@ -7,13 +7,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Urls } from '../entity';
 import { YoutubeNotifyService } from './youtube-notify.service';
 import { Intents } from 'discord.js';
+import { CommandModule } from './command.module';
 
 @Module({
   imports: [
     DiscordModule.forRootAsync({
       inject: [Config],
+      imports: [CommandModule],
       useFactory: (config: Config) => ({
         token: config.token,
+        commands: ['**/*.command.js'],
         discordClientOptions: {
           intents: [
             Intents.FLAGS.GUILDS,
@@ -22,6 +25,9 @@ import { Intents } from 'discord.js';
           ],
           partials: ['CHANNEL'],
         },
+        registerCommandOptions: config.notificationManageGuildIds.map(
+          (forGuild) => ({ forGuild }),
+        ),
       }),
     }),
     MultiImageSearchModule,

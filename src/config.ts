@@ -31,6 +31,9 @@ export class Config {
   @IsString()
   public readonly vtrackerEndpoint: string;
 
+  @IsString({ each: true })
+  public readonly notificationManageGuildIds: string[];
+
   @IsDefined()
   public readonly notifications: {
     [key: string]: { id: number; token: string; raw: boolean; send: string[] };
