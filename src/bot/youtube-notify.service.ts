@@ -218,7 +218,9 @@ export class YoutubeNotifyService {
       'カバー',
       'アコギ',
       'official video',
+      // Korean
       '불러보',
+      '커버',
     ];
 
     const musicList0 = [
