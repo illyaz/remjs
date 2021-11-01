@@ -120,10 +120,13 @@ export class YoutubeNotifyService {
       const embed = this.getEmbed(data);
       if (meta.type == SendTypes.th) {
         embed.footer.text = data.isTest ? '[ทดสอบ] ' : '';
-        if (data.type === 'liveStarted') embed.footer.text += 'แจ้งเตือนไลฟ์';
+        if (data.type === 'liveStarted') embed.footer.text += 'ไลฟ์';
+        else if (data.type === 'liveScheduled') embed.footer.text += 'ตั้งไลฟ์';
         else if (data.type === 'premiereStarted')
-          embed.footer.text += 'แจ้งเตือนเปิดตัวคลิป';
-        else embed.footer.text += 'แจ้งเตือนอัปโหลด';
+          embed.footer.text += 'พรีเมียร์';
+        else if (data.type === 'premiereScheduled')
+          embed.footer.text += 'ตั้งพรีเมียร์';
+        else if (data.type === 'uploaded') embed.footer.text += 'อัปโหลด';
       }
 
       try {
