@@ -24,11 +24,10 @@ export class SubscribeCommand
     interaction: CommandInteraction,
   ) {
     try {
-      const deferPromise = interaction.deferReply();
+      await interaction.deferReply();
       const { isAlreadySubscribed, channel } =
         await this.commandService.subscribe(dto.channel);
 
-      await deferPromise;
       await interaction.editReply({
         content: null,
         embeds: [

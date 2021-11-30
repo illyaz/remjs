@@ -77,7 +77,7 @@ export class YoutubeNotifyService {
       );
 
       const client = new VTrackerNotifyClient(
-        this.config.vtrackerEndpoint,
+        this.config.vtrackerEndpoint + '/v1',
         key,
         this.config.notifications[key].id,
         this.config.notifications[key].token,

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { Config } from '../config';
@@ -6,40 +6,8 @@ import { MessageEmbed } from 'discord.js';
 
 export interface Channel {
   id: string;
-  platform: string;
   title: string;
-  description: string;
-  keywords: string[];
-  availability: string;
-  customUrl: string;
-  country: string;
   avatar: string;
-  avatars: Avatars;
-  banner: string;
-  banners: Banners;
-  externalUrls: string[];
-  viewCount: number;
-  videoCount: number;
-  subscriberCount: number;
-  isArtist: boolean;
-  isVerified: boolean;
-  publishedAt: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface Avatars {
-  default: string;
-  standard: string;
-  large: string;
-}
-
-export interface Banners {
-  default: string;
-  medium: string;
-  high: string;
-  standard: string;
-  max: string;
 }
 
 @Injectable()
@@ -106,27 +74,39 @@ export class CommandService {
       throw new Error(`can't extract channel id from url <${url}>`);
 
     const res = await lastValueFrom(
-      this.http.put(
-        `${this.config.vtrackerEndpoint}/notifications/${
-          all.id
-        }/channels/${channelId}?bearer=${encodeURIComponent(all.token)}`,
+      this.http.post(
+        `${
+          this.config.vtrackerEndpoint
+        }/v2/channels/youtube/${channelId}?bearer=${encodeURIComponent(
+          all.token,
+        )}`,
         undefined,
-        { validateStatus: (s) => s === 204 || s === 409 },
+        {
+          validateStatus: (s) =>
+            s === HttpStatus.CREATED || s === HttpStatus.CONFLICT,
+        },
       ),
     );
 
-    if (res.status === 204 || res.status === 409) {
+    if (
+      res.status === HttpStatus.CREATED ||
+      res.status === HttpStatus.CONFLICT
+    ) {
       const channel = await lastValueFrom(
         this.http.get<Channel>(
           `${
             this.config.vtrackerEndpoint
-          }/channels/youtube/${channelId}?bearer=${encodeURIComponent(
+          }/v2/channels/youtube/${channelId}?bearer=${encodeURIComponent(
             all.token,
           )}`,
         ),
       ).then((x) => x.data);
-      return { isAlreadySubscribed: res.status === 409, channel };
-    } else if (res.status === 404) throw new Error('channel not exists');
+      return {
+        isAlreadySubscribed: res.status === HttpStatus.CONFLICT,
+        channel,
+      };
+    } else if (res.status === HttpStatus.NOT_FOUND)
+      throw new Error('channel not exists');
     else throw new Error('unknown error: ' + res.status);
   }
 
@@ -143,9 +123,9 @@ export class CommandService {
 
     const res = await lastValueFrom(
       this.http.delete(
-        `${this.config.vtrackerEndpoint}/notifications/${
+        `${this.config.vtrackerEndpoint}/v2/notifications/${
           all.id
-        }/channels/${channelId}?bearer=${encodeURIComponent(all.token)}`,
+        }/v2/channels/${channelId}?bearer=${encodeURIComponent(all.token)}`,
 
         { validateStatus: (s) => s === 204 || s === 400 },
       ),
@@ -156,7 +136,7 @@ export class CommandService {
         this.http.get<Channel>(
           `${
             this.config.vtrackerEndpoint
-          }/channels/youtube/${channelId}?bearer=${encodeURIComponent(
+          }/v2/channels/youtube/${channelId}?bearer=${encodeURIComponent(
             all.token,
           )}`,
         ),
