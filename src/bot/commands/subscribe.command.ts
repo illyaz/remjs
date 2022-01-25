@@ -8,6 +8,7 @@ import {
 import { CommandInteraction } from 'discord.js';
 import { ChannelOrIdDto } from '../dto/channel-or-id.dto';
 import { CommandService } from '../command.service';
+import { Config } from './../../config';
 
 @Command({
   name: 'sub',
@@ -17,7 +18,10 @@ import { CommandService } from '../command.service';
 export class SubscribeCommand
   implements DiscordTransformedCommand<ChannelOrIdDto>
 {
-  constructor(private readonly commandService: CommandService) {}
+  constructor(
+    private readonly commandService: CommandService,
+    private readonly config: Config,
+  ) {}
 
   async handler(
     @Payload() dto: ChannelOrIdDto,
@@ -25,6 +29,15 @@ export class SubscribeCommand
   ) {
     try {
       await interaction.deferReply();
+      if (
+        !this.config.notificationManageUserIds.includes(
+          interaction.member.user.id,
+        )
+      ) {
+        await interaction.editReply({ content: 'You not have permission' });
+        return;
+      }
+
       const { isAlreadySubscribed, channel } =
         await this.commandService.subscribe(dto.channel);
 

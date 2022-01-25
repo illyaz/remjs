@@ -34,6 +34,9 @@ export class Config {
   @IsString({ each: true })
   public readonly notificationManageGuildIds: string[];
 
+  @IsString({ each: true })
+  public readonly notificationManageUserIds: string[];
+
   @IsDefined()
   public readonly notifications: {
     [key: string]: { id: number; token: string; raw: boolean; send: string[] };

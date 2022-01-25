@@ -1,3 +1,4 @@
+import { Config } from './../../config';
 import {
   Command,
   DiscordTransformedCommand,
@@ -17,7 +18,10 @@ import { CommandService } from '../command.service';
 export class UnsubscribeCommand
   implements DiscordTransformedCommand<ChannelOrIdDto>
 {
-  constructor(private readonly commandService: CommandService) {}
+  constructor(
+    private readonly commandService: CommandService,
+    private readonly config: Config,
+  ) {}
 
   async handler(
     @Payload() dto: ChannelOrIdDto,
@@ -25,6 +29,15 @@ export class UnsubscribeCommand
   ) {
     try {
       const deferPromise = interaction.deferReply();
+      if (
+        !this.config.notificationManageUserIds.includes(
+          interaction.member.user.id,
+        )
+      ) {
+        await interaction.editReply({ content: 'You not have permission' });
+        return;
+      }
+
       const { isAlreadyUnsubscribed, channel } =
         await this.commandService.unsubscribe(dto.channel);
 
