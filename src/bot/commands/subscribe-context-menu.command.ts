@@ -5,16 +5,16 @@ import {
   Payload,
   UsePipes,
 } from '@discord-nestjs/core';
-import { CommandInteraction, MessageContextMenuInteraction } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 import { CommandService } from '../command.service';
 import { Config } from './../../config';
 import { ApplicationCommandTypes } from 'discord.js/typings/enums';
-import * as linkifyIt from 'linkify-it'
+import * as linkifyIt from 'linkify-it';
 
 @Command({
   name: 'subscribe',
   description: '',
-  type: ApplicationCommandTypes.MESSAGE
+  type: ApplicationCommandTypes.MESSAGE,
 })
 @UsePipes(TransformPipe)
 export class SubscribeContextMenuCommand
@@ -25,14 +25,10 @@ export class SubscribeContextMenuCommand
   constructor(
     private readonly commandService: CommandService,
     private readonly config: Config,
-  ) { }
+  ) {}
 
-  async handler(
-    @Payload() dto: any,
-    interaction: CommandInteraction,
-  ) {
-    if (!interaction.isMessageContextMenu())
-      return;
+  async handler(@Payload() dto: any, interaction: CommandInteraction) {
+    if (!interaction.isMessageContextMenu()) return;
 
     try {
       await interaction.deferReply();
@@ -47,8 +43,13 @@ export class SubscribeContextMenuCommand
 
       const urls = this.linkify
         .match(interaction.targetMessage.content)
-        .map(x => new URL(x.url))
-        .filter(x => x.host === 'youtube.com' || x.host === 'www.youtube.com' || x.host === 'youtu.be');
+        .map((x) => new URL(x.url))
+        .filter(
+          (x) =>
+            x.host === 'youtube.com' ||
+            x.host === 'www.youtube.com' ||
+            x.host === 'youtu.be',
+        );
 
       if (urls.length === 1) {
         const { isAlreadySubscribed, channel } =
@@ -76,7 +77,7 @@ export class SubscribeContextMenuCommand
                 channel,
               ),
             ],
-          })
+          });
         }
 
         await interaction.editReply(`Processed ${urls.length} channels`);
