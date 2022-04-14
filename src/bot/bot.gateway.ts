@@ -107,10 +107,13 @@ export class BotGateway {
         before: ctx.id,
         limit: 3,
       });
-
       let foundMsg = false;
       for (const [, msg] of msgs.filter((x) => x.author.id === ctx.author.id)) {
-        const attachment = msg.attachments.first();
+        let attachment = msg.attachments.first();
+        if (!attachment)
+          attachment = msg.embeds.find((x) => x.type === 'image')
+            ?.thumbnail as any;
+
         if (attachment && attachment.width > 0 && attachment.height > 0) {
           const thumbUrl = `${
             attachment.proxyURL
@@ -118,6 +121,7 @@ export class BotGateway {
             256 * (attachment.height / attachment.width),
           )}`;
 
+          this.logger.debug(`Search image using url: ${thumbUrl}`);
           const results = (
             await this.imageSearchService.search(thumbUrl)
           ).filter((x) => x.similarity >= 20);
