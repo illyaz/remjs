@@ -62,6 +62,27 @@ export class CommandService {
     }
   }
 
+  async getChannel(channelId: string): Promise<Channel | undefined> {
+    const all = this.config.notifications['all'];
+    if (!all) throw new Error('required notification token `all`');
+
+    const res = await lastValueFrom(
+      this.http.get(
+        `${
+          this.config.vtrackerEndpoint
+        }/v2/channels/youtube/${channelId}?bearer=${encodeURIComponent(
+          all.token,
+        )}`,
+        {
+          validateStatus: (s) =>
+            s === HttpStatus.NOT_FOUND || s === HttpStatus.OK,
+        },
+      ),
+    );
+
+    return res.status === HttpStatus.OK ? res.data : undefined;
+  }
+
   async subscribe(url: string): Promise<{
     isAlreadySubscribed: boolean;
     channel: Channel;

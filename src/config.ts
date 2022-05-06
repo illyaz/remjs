@@ -41,4 +41,7 @@ export class Config {
   public readonly notifications: {
     [key: string]: { id: number; token: string; raw: boolean; send: string[] };
   };
+
+  @IsString({ each: true })
+  public readonly autoCheckNotificationGuildIds: string[];
 }

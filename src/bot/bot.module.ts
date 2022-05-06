@@ -32,6 +32,7 @@ import { CommandModule } from './command.module';
     }),
     MultiImageSearchModule,
     TypeOrmModule.forFeature([Urls]),
+    CommandModule,
   ],
   providers: [BotGateway, YoutubeNotifyService],
 })

@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { Urls } from '../entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { YoutubeNotifyService } from './youtube-notify.service';
+import { CommandService } from './command.service';
 
 @Injectable()
 export class BotGateway {
@@ -25,6 +26,7 @@ export class BotGateway {
     @InjectRepository(Urls)
     private readonly urls: Repository<Urls>,
     private readonly ytNotifyService: YoutubeNotifyService,
+    private readonly commandService: CommandService,
   ) {
     this.commandMap = Object.getOwnPropertyNames(BotGateway.prototype)
       .filter((x) => x.endsWith('Command') && x !== 'processCommand')
@@ -53,6 +55,7 @@ export class BotGateway {
     else if (ctx.content === 'วาป' || ctx.content === 'ซอส')
       // noinspection JSIgnoredPromiseFromCall
       this.findSource(ctx);
+    else this.autoCheckNotification(ctx);
   }
 
   async processCommand(ctx: Message) {
@@ -183,5 +186,19 @@ export class BotGateway {
       ctx.reply('Oops something went wrong, please try again later');
       this.logger.error(e);
     }
+  }
+
+  async autoCheckNotification(ctx: Message): Promise<void> {
+    if (!this.config.autoCheckNotificationGuildIds.includes(ctx.guildId))
+      return;
+
+    try {
+      const id = await this.commandService.getChannelIdFromUrl(ctx.content);
+      if (id) {
+        const channel = await this.commandService.getChannel(id);
+
+        await ctx.react(channel ? '✅' : '❌');
+      }
+    } catch {}
   }
 }
