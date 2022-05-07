@@ -33,7 +33,7 @@
     "class-validator": "^0.13.1",
     "discord.js": "^13.6.0",
     "humanize-duration": "^3.27.0",
-    "linkify-it": "^3.0.3",
+    "linkify-it": "^4.0.1",
     "nest-typed-config": "^2.0.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

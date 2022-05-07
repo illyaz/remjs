@@ -10,7 +10,9 @@ import { Urls } from '../entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { YoutubeNotifyService } from './youtube-notify.service';
 import { CommandService, Video } from './command.service';
+import * as _linkify from 'linkify-it';
 
+const linkify = _linkify();
 @Injectable()
 export class BotGateway {
   private readonly logger = new Logger(BotGateway.name);
@@ -189,27 +191,37 @@ export class BotGateway {
   }
 
   async autoCheckNotification(ctx: Message): Promise<void> {
-    if (!this.config.autoCheckNotificationGuildIds.includes(ctx.guildId))
+    if (
+      ctx.author.bot ||
+      !this.config.autoCheckNotificationGuildIds.includes(ctx.guildId)
+    )
       return;
 
     try {
-      const vid = this.commandService.getVideoIdFromUrl(ctx.content);
-      const promises = [
-        vid
-          ? this.commandService.getVideo(vid).then((video) => ({ video }))
-          : Promise.reject(new Error('not_found')),
-        this.commandService
-          .getChannelIdFromUrl(ctx.content)
-          .then((id) => this.commandService.getChannel(id))
-          .then((channel) => ({ channel })),
-      ];
+      const url = linkify.match(ctx.content)?.[0]?.url;
+      if (url) {
+        const vid = this.commandService.getVideoIdFromUrl(url);
+        const promises = [
+          vid
+            ? this.commandService.getVideo(vid).then((video) => ({ video }))
+            : Promise.reject(new Error('not_found')),
+          this.commandService
+            .getChannelIdFromUrl(url)
+            .then((id) =>
+              id
+                ? this.commandService.getChannel(id)
+                : Promise.reject(new Error('not_found')),
+            )
+            .then((channel) => ({ channel })),
+        ];
 
-      const res = await Promise.any(promises);
-      ctx.react(res.video || res.channel ? '✅' : '❌');
+        const res = await Promise.any(promises);
+        ctx.react(res.video || res.channel ? '✅' : '❌');
 
-      const video = (await promises[0]).video as Video;
+        const video = (await promises[0]).video as Video;
 
-      if (video && video.status === 'upcoming') ctx.react('⏳');
+        if (video && video.status === 'upcoming') ctx.react('⏳');
+      }
     } catch {}
   }
 }
