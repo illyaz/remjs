@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 import { Urls } from '../entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { YoutubeNotifyService } from './youtube-notify.service';
-import { CommandService } from './command.service';
+import { CommandService, Video } from './command.service';
 
 @Injectable()
 export class BotGateway {
@@ -193,12 +193,23 @@ export class BotGateway {
       return;
 
     try {
-      const id = await this.commandService.getChannelIdFromUrl(ctx.content);
-      if (id) {
-        const channel = await this.commandService.getChannel(id);
+      const vid = this.commandService.getVideoIdFromUrl(ctx.content);
+      const promises = [
+        vid
+          ? this.commandService.getVideo(vid).then((video) => ({ video }))
+          : Promise.reject(new Error('not_found')),
+        this.commandService
+          .getChannelIdFromUrl(ctx.content)
+          .then((id) => this.commandService.getChannel(id))
+          .then((channel) => ({ channel })),
+      ];
 
-        await ctx.react(channel ? '✅' : '❌');
-      }
+      const res = await Promise.any(promises);
+      ctx.react(res.video || res.channel ? '✅' : '❌');
+
+      const video = (await promises[0]).video as Video;
+
+      if (video && video.status === 'upcoming') ctx.react('⏳');
     } catch {}
   }
 }

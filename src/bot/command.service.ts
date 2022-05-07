@@ -10,6 +10,13 @@ export interface Channel {
   avatar: string;
 }
 
+export interface Video {
+  id: string;
+  title: string;
+  status: 'published' | 'ongoing' | 'upcoming';
+  type: 'upload' | 'live' | 'premiere';
+}
+
 @Injectable()
 export class CommandService {
   constructor(
@@ -17,6 +24,13 @@ export class CommandService {
     private readonly config: Config,
   ) {
     console.log(this.config);
+  }
+
+  // Ref: https://stackoverflow.com/a/27728417
+  getVideoIdFromUrl(urlString: string): string {
+    const rx =
+      /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
+    return urlString.match(rx)?.[1];
   }
 
   async getChannelIdFromUrl(urlString: string) {
@@ -63,16 +77,23 @@ export class CommandService {
   }
 
   async getChannel(channelId: string): Promise<Channel | undefined> {
-    const all = this.config.notifications['all'];
-    if (!all) throw new Error('required notification token `all`');
-
     const res = await lastValueFrom(
       this.http.get(
-        `${
-          this.config.vtrackerEndpoint
-        }/v2/channels/youtube/${channelId}?bearer=${encodeURIComponent(
-          all.token,
-        )}`,
+        `${this.config.vtrackerEndpoint}/v1/channels/youtube/${channelId}`,
+        {
+          validateStatus: (s) =>
+            s === HttpStatus.NOT_FOUND || s === HttpStatus.OK,
+        },
+      ),
+    );
+
+    return res.status === HttpStatus.OK ? res.data : undefined;
+  }
+
+  async getVideo(videoId: string): Promise<Video | undefined> {
+    const res = await lastValueFrom(
+      this.http.get(
+        `${this.config.vtrackerEndpoint}/v1/videos/youtube/${videoId}`,
         {
           validateStatus: (s) =>
             s === HttpStatus.NOT_FOUND || s === HttpStatus.OK,
