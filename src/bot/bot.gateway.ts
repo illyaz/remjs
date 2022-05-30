@@ -193,7 +193,10 @@ export class BotGateway {
   async autoCheckNotification(ctx: Message): Promise<void> {
     if (
       ctx.author.bot ||
-      !this.config.autoCheckNotificationGuildIds.includes(ctx.guildId)
+      !(
+        this.config.autoCheckNotificationGuildIds.includes(ctx.guildId) ||
+        this.config.autoCheckNotificationChannelIds.includes(ctx.channelId)
+      )
     )
       return;
 

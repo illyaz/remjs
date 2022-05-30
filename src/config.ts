@@ -44,4 +44,7 @@ export class Config {
 
   @IsString({ each: true })
   public readonly autoCheckNotificationGuildIds: string[];
+
+  @IsString({ each: true })
+  public readonly autoCheckNotificationChannelIds: string[];
 }
