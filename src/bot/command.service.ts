@@ -47,7 +47,7 @@ export class CommandService {
     ) {
       if (paths.length >= 2 && paths[0] === 'channel') return paths[1];
 
-      if (paths.length >= 2 && (paths[0] === 'c' || paths[0] === 'user')) {
+      if ((paths.length >= 2 && (paths[0] === 'c' || paths[0] === 'user')) || paths?.[0]?.startsWith('@')) {
         const html = await lastValueFrom(this.http.get(url.toString())).then(
           (x) => x.data.toString(),
         );
