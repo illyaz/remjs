@@ -47,12 +47,19 @@ export class CommandService {
     ) {
       if (paths.length >= 2 && paths[0] === 'channel') return paths[1];
 
-      if ((paths.length >= 2 && (paths[0] === 'c' || paths[0] === 'user')) || paths?.[0]?.startsWith('@')) {
+      if (
+        (paths.length >= 2 && (paths[0] === 'c' || paths[0] === 'user')) ||
+        paths?.[0]?.startsWith('@')
+      ) {
         const html = await lastValueFrom(this.http.get(url.toString())).then(
           (x) => x.data.toString(),
         );
-        const idx = html.indexOf('<meta itemprop="channelId"');
-        if (idx >= 0) return html.substr(idx + 36, 24);
+
+        const m =
+          /<meta itemprop="(channelId|identifier)" content="(?<id>.{24})">/.exec(
+            html,
+          );
+        if (m?.groups?.id) return m.groups.id;
       } else {
         const oembedRes = await lastValueFrom(
           this.http.get(
@@ -69,8 +76,11 @@ export class CommandService {
           const html = await lastValueFrom(this.http.get(url.toString())).then(
             (x) => x.data.toString(),
           );
-          const idx = html.indexOf('<meta itemprop="channelId"');
-          if (idx >= 0) return html.substr(idx + 36, 24);
+          const m =
+            /<meta itemprop="(channelId|identifier)" content="(?<id>.{24})">/.exec(
+              html,
+            );
+          if (m?.groups?.id) return m.groups.id;
         }
       }
     }
