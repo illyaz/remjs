@@ -337,7 +337,9 @@ export class YoutubeNotifyService {
         : `${obj.username}#${obj.discriminator}`
       : 'UNKNOWN';
     this.logger.log(
-      key.padEnd(16) +
+      data.auditId +
+        ' ' +
+        key.padEnd(16) +
         ' ' +
         ident.padEnd(35) +
         ' ' +

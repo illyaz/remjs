@@ -24,6 +24,7 @@ export interface HeartbeatPayload {
 export interface YoutubeVideoNotifyPayload {
   op: 'youtubeVideoNotify';
   isTest: boolean | null;
+  auditId: number;
   videoId: string;
   videoTitle: string;
   channelId: string;

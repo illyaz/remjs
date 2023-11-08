@@ -87,9 +87,12 @@ export class CommandService {
   }
 
   async getChannel(channelId: string): Promise<Channel | undefined> {
+    const all = this.config.notifications['all'];
     const res = await lastValueFrom(
       this.http.get(
-        `${this.config.vtrackerEndpoint}/v1/channels/youtube/${channelId}`,
+        `${this.config.vtrackerEndpoint}/v2/channels/youtube/${channelId}?bearer=${encodeURIComponent(
+            all.token,
+        )}`,
         {
           validateStatus: (s) =>
             s === HttpStatus.NOT_FOUND || s === HttpStatus.OK,
@@ -101,9 +104,12 @@ export class CommandService {
   }
 
   async getVideo(videoId: string): Promise<Video | undefined> {
+    const all = this.config.notifications['all'];
     const res = await lastValueFrom(
       this.http.get(
-        `${this.config.vtrackerEndpoint}/v1/videos/youtube/${videoId}`,
+        `${this.config.vtrackerEndpoint}/v2/videos/youtube/${videoId}?bearer=${encodeURIComponent(
+            all.token,
+        )}`,
         {
           validateStatus: (s) =>
             s === HttpStatus.NOT_FOUND || s === HttpStatus.OK,
