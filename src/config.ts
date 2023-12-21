@@ -47,4 +47,10 @@ export class Config {
 
   @IsString({ each: true })
   public readonly autoCheckNotificationChannelIds: string[];
+
+  @IsString({ each: true })
+  public readonly autoFixTweetGuildIds: string[];
+
+  @IsString({ each: true })
+  public readonly autoFixTweetChannelIds: string[];
 }

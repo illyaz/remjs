@@ -57,7 +57,10 @@ export class BotGateway {
     else if (ctx.content === 'วาป' || ctx.content === 'ซอส')
       // noinspection JSIgnoredPromiseFromCall
       this.findSource(ctx);
-    else this.autoCheckNotification(ctx);
+    else {
+      this.autoCheckNotification(ctx);
+      this.autoFixTweet(ctx);
+    }
   }
 
   async processCommand(ctx: Message) {
@@ -224,6 +227,42 @@ export class BotGateway {
         const video = (await promises[0]).video as Video;
 
         if (video && video.status === 'upcoming') ctx.react('⏳');
+      }
+    } catch {}
+  }
+
+  async autoFixTweet(ctx: Message): Promise<void> {
+    if (
+      ctx.author.bot ||
+      !(
+        this.config.autoFixTweetGuildIds.includes(ctx.guildId) ||
+        this.config.autoFixTweetChannelIds.includes(ctx.channelId)
+      )
+    )
+      return;
+
+    try {
+      const urls = linkify.match(ctx.content)?.map((x) => new URL(x.url));
+      if (urls?.length) {
+        const fixUrls = [];
+        for (const url of urls) {
+          if (
+            url.hostname === 'www.twitter.com' ||
+            url.hostname === 'twitter.com' ||
+            url.hostname === 'www.x.com' ||
+            url.hostname === 'x.com'
+          ) {
+            url.hostname = 'fxtwitter.com';
+            fixUrls.push(url.toString());
+          }
+        }
+
+        ctx.reply({
+          content: fixUrls.join('\n'),
+          allowedMentions: {
+            repliedUser: false,
+          },
+        });
       }
     } catch {}
   }
