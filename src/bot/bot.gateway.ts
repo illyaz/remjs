@@ -226,7 +226,8 @@ export class BotGateway {
 
         const video = (await promises[0]).video as Video;
 
-        if (video && video.status === 'upcoming') ctx.react('⏳');
+        if (video && video.status === 'upcoming') ctx.react('🟥');
+        if (video && video.status === 'ongoing') ctx.react('🟩');
       }
     } catch {}
   }
